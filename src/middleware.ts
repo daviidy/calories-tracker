@@ -9,6 +9,14 @@ export function middleware(request: NextRequest) {
   const publicPaths = ['/login', '/register'];
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
 
+  // Handle root path
+  if (pathname === '/') {
+    if (authCookie) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // If the user is not authenticated and trying to access a protected route
   if (!authCookie && !isPublicPath) {
     const loginUrl = new URL('/login', request.url);

@@ -12,6 +12,7 @@ import {
   Image,
   Laptop,
   Loader2,
+  LogOut,
   LucideProps,
   Moon,
   MoreVertical,
@@ -42,6 +43,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  logout: LogOut,
   google: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

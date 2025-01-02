@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['cdn.midjourney.com'],
+    domains: [
+      'www.gravatar.com',
+      'cdn.midjourney.com',
+      's3-us-west-2.amazonaws.com'
+    ],
   },
 }
 

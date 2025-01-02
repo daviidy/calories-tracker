@@ -8,7 +8,10 @@ import DateSearch from '@/components/calories/DateSearch';
 import { useCalorieLog, CalorieLogEntry } from '@/lib/hooks/useCalorieLog';
 import { useCalorieChartData } from '@/lib/hooks/useCalorieChartData';
 import EditEntryDialog from '@/components/calories/EditEntryDialog';
-import { PencilIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
+import { toast } from 'react-hot-toast';
 
 const CalorieLogPage = () => {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
@@ -57,6 +60,19 @@ const CalorieLogPage = () => {
 
   const handleEditSuccess = () => {
     refresh();
+  };
+
+  const handleDelete = async (entryId: string) => {
+    if (!confirm('Are you sure you want to delete this entry?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'calorieEntries', entryId));
+      toast.success('Entry deleted successfully');
+      refresh();
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      toast.error('Failed to delete entry');
+    }
   };
 
   return (
@@ -189,13 +205,22 @@ const CalorieLogPage = () => {
                   <h3 className="text-lg font-semibold text-gray-900">
                     {format(entry.date, 'MMMM d, yyyy h:mm a')}
                   </h3>
-                  <button
-                    onClick={() => setSelectedEntry(entry)}
-                    className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                    aria-label="Edit entry"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedEntry(entry)}
+                      className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Edit entry"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="p-2 text-gray-500 hover:text-red-600 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Delete entry"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">

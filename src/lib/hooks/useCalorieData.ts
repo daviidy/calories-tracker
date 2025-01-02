@@ -47,8 +47,22 @@ export const useCalorieData = () => {
   const { calorieStreak, challengeStreak } = useStreakData(entries, challengeEntries);
 
   useEffect(() => {
+    let unsubscribeGoals: (() => void) | undefined;
+
     if (!user) {
       setIsLoading(false);
+      setEntries([]);
+      setChallengeEntries([]);
+      setSummary({
+        totalCalories: 0,
+        totalBurned: 0,
+        netCalories: 0,
+        goalProgress: 0,
+        calorieGoal: 2000,
+        weeklyData: {},
+        calorieStreak: 0,
+        challengeStreak: 0,
+      });
       return;
     }
 
@@ -124,7 +138,7 @@ export const useCalorieData = () => {
       const netCalories = totalCalories - totalBurned;
 
       // Get the latest goal and calculate progress
-      const unsubscribeGoals = onSnapshot(goalsQuery, (goalsSnapshot) => {
+      unsubscribeGoals = onSnapshot(goalsQuery, (goalsSnapshot) => {
         const latestGoal = goalsSnapshot.docs[0]?.data()?.target || 2000; // Default to 2000 if no goal is set
         const goalProgress = Math.min(Math.round((totalCalories / latestGoal) * 100), 100);
 
@@ -145,10 +159,11 @@ export const useCalorieData = () => {
         setIsLoading(false);
       });
 
-      return () => unsubscribeGoals();
     }, (error) => {
-      console.error('Error fetching entries:', error);
-      setError('Failed to fetch calorie entries');
+      if (error.code !== 'permission-denied') {
+        console.error('Error fetching entries:', error);
+        setError('Failed to fetch calorie entries');
+      }
       setIsLoading(false);
     });
 
@@ -164,22 +179,30 @@ export const useCalorieData = () => {
         }
       });
       setChallengeEntries(allChallengeEntries);
+    }, (error) => {
+      if (error.code !== 'permission-denied') {
+        console.error('Error fetching challenges:', error);
+        setError('Failed to fetch challenges');
+      }
     });
 
     return () => {
-      unsubscribeEntries();
-      unsubscribeChallenges();
+      if (unsubscribeEntries) unsubscribeEntries();
+      if (unsubscribeGoals) unsubscribeGoals();
+      if (unsubscribeChallenges) unsubscribeChallenges();
     };
   }, [user]);
 
   // Update summary when streaks change
   useEffect(() => {
+    if (!user) return;
+    
     setSummary(prev => ({
       ...prev,
       calorieStreak,
       challengeStreak,
     }));
-  }, [calorieStreak, challengeStreak]);
+  }, [calorieStreak, challengeStreak, user]);
 
   return { summary, isLoading, error };
 }; 

@@ -33,3 +33,4 @@ Follow these rules when you write code:
 - Use consts instead of functions, for example, “const toggle = () =>”. Also, define a type if possible.
 - Always finish feature implementation with proper testing.
 - Always finish feature implementation with documentation.
+- Check the package.json before installing any new dependencies, to see if the dependency is already installed.

@@ -128,7 +128,17 @@ const DashboardPage = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Active Challenges</h2>
             {challenges.length > 0 && (
-              <span className="text-sm text-gray-500">{challenges.length} active</span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-500">{challenges.length} active</span>
+                {challenges.length > 2 && (
+                  <a 
+                    href="/challenges" 
+                    className="text-sm text-[#4d90cc] hover:text-[#4d90cc]/90"
+                  >
+                    View All
+                  </a>
+                )}
+              </div>
             )}
           </div>
 
@@ -153,7 +163,7 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {challenges.map((challenge) => (
+              {challenges.slice(0, 2).map((challenge) => (
                 <div key={challenge.id} className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -191,6 +201,14 @@ const DashboardPage = () => {
                   )}
                 </div>
               ))}
+              {challenges.length > 2 && (
+                <a 
+                  href="/challenges"
+                  className="block text-center py-3 border border-gray-200 rounded-lg text-[#4d90cc] hover:text-[#4d90cc]/90 hover:border-gray-300 transition-colors"
+                >
+                  View {challenges.length - 2} more challenge{challenges.length - 2 !== 1 ? 's' : ''}
+                </a>
+              )}
             </div>
           )}
         </div>

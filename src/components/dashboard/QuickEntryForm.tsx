@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { db } from "@/lib/firebase/config";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 import { useAuth } from "@/lib/context/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -26,52 +26,62 @@ interface ChallengeFormData {
   trackingType: TrackingType;
 }
 
-const QuickEntryForm = () => {
-  const { user } = useAuth();
+interface QuickEntryFormProps {
+  editEntry?: {
+    id: string;
+    consumed: number;
+    expended: number;
+    timestamp: Date;
+  };
+  onClose?: () => void;
+}
+
+const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [entryType, setEntryType] = useState<EntryType | null>(null);
-  const [consumed, setConsumed] = useState('');
-  const [expended, setExpended] = useState('');
-  const [target, setTarget] = useState('');
+  const [type, setType] = useState<'calories' | 'goals' | 'challenges'>('calories');
+  const [consumed, setConsumed] = useState(editEntry?.consumed.toString() || '');
+  const [expended, setExpended] = useState(editEntry?.expended.toString() || '');
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [challengeData, setChallengeData] = useState<ChallengeFormData>({
-    name: '',
-    type: 'Fitness',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    frequency: 'Daily',
-    trackingType: 'Checkbox'
-  });
+
+  useEffect(() => {
+    if (editEntry) {
+      setIsOpen(true);
+      setConsumed(editEntry.consumed.toString());
+      setExpended(editEntry.expended.toString());
+    }
+  }, [editEntry]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    if (!consumed && !expended) {
-      toast.error('Please enter at least one value');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
-      const docRef = await addDoc(collection(db, 'calorieEntries'), {
+      const entryData = {
         userId: user.uid,
-        consumed: consumed ? parseInt(consumed) : 0,
-        expended: expended ? parseInt(expended) : 0,
-        timestamp: new Date()
-      });
+        consumed: parseInt(consumed) || 0,
+        expended: parseInt(expended) || 0,
+        timestamp: editEntry?.timestamp || new Date(),
+      };
 
-      if (docRef.id) {
-        toast.success('Entry added successfully!');
-        // Reset form
-        setIsOpen(false);
-        setEntryType(null);
-        setConsumed('');
-        setExpended('');
+      if (editEntry) {
+        // Update existing entry
+        await updateDoc(doc(db, 'calorieEntries', editEntry.id), entryData);
+        toast.success('Entry updated successfully');
+      } else {
+        // Create new entry
+        await addDoc(collection(db, 'calorieEntries'), entryData);
+        toast.success('Entry added successfully');
       }
+
+      setIsOpen(false);
+      setConsumed('');
+      setExpended('');
+      if (onClose) onClose();
     } catch (error) {
-      console.error('Error adding entry:', error);
-      toast.error('Failed to add entry. Please try again.');
+      console.error('Error saving entry:', error);
+      toast.error('Failed to save entry');
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +162,7 @@ const QuickEntryForm = () => {
   };
 
   const renderForm = () => {
-    switch (entryType) {
+    switch (type) {
       case 'calories':
         return (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -362,21 +372,21 @@ const QuickEntryForm = () => {
         return (
           <div className="grid grid-cols-1 gap-4">
             <button
-              onClick={() => setEntryType('calories')}
+              onClick={() => setType('calories')}
               className="p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
             >
               <h3 className="font-medium text-gray-900">Calories Entry</h3>
               <p className="text-sm text-gray-500">Log your daily calorie intake and expenditure</p>
             </button>
             <button
-              onClick={() => setEntryType('goals')}
+              onClick={() => setType('goals')}
               className="p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
             >
               <h3 className="font-medium text-gray-900">Calorie Goals</h3>
               <p className="text-sm text-gray-500">Set or update your calorie goals</p>
             </button>
             <button
-              onClick={() => setEntryType('challenges')}
+              onClick={() => setType('challenges')}
               className="p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
             >
               <h3 className="font-medium text-gray-900">New Challenge</h3>
@@ -403,12 +413,12 @@ const QuickEntryForm = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">
-                {entryType ? `Add ${entryType.charAt(0).toUpperCase() + entryType.slice(1)}` : 'Quick Entry'}
+                {type ? `Add ${type.charAt(0).toUpperCase() + type.slice(1)}` : 'Quick Entry'}
               </h2>
               <button 
                 onClick={() => {
                   setIsOpen(false);
-                  setEntryType(null);
+                  setType(null);
                 }}
                 className="text-gray-500 hover:text-gray-700"
                 aria-label="Close"

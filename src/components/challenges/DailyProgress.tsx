@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { format, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek, subMonths, startOfDay } from 'date-fns';
+import { format, eachDayOfInterval, startOfWeek, endOfWeek, subMonths, startOfDay } from 'date-fns';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
 interface DailyProgressProps {
@@ -31,7 +31,7 @@ const DailyProgress = ({ startDate, endDate, entries }: DailyProgressProps) => {
         weeksArray.push(currentWeek);
         currentWeek = [];
       }
-      currentWeek.push(day);
+      currentWeek.push(startOfDay(day));
     });
     
     if (currentWeek.length > 0) {
@@ -42,16 +42,32 @@ const DailyProgress = ({ startDate, endDate, entries }: DailyProgressProps) => {
   }, []);
 
   const getEntryForDay = (day: Date) => {
-    return entries.find(entry => isSameDay(entry.date, day));
+    // Normalize both dates to start of day for comparison
+    const normalizedDay = startOfDay(day);
+    return entries.find(entry => {
+      const entryDate = startOfDay(entry.date);
+      return entryDate.getTime() === normalizedDay.getTime();
+    });
   };
 
   const getColorClass = (day: Date) => {
-    if (day < startDate || day > endDate) return 'bg-[#161b22]';
-    const entry = getEntryForDay(day);
-    if (!entry) return 'bg-[#161b22]';
+    const normalizedDay = startOfDay(day);
+    const normalizedStartDate = startOfDay(startDate);
+    const normalizedEndDate = startOfDay(endDate);
+
+    if (normalizedDay < normalizedStartDate || normalizedDay > normalizedEndDate) {
+      return 'bg-[#161b22]';
+    }
+
+    const entry = getEntryForDay(normalizedDay);
+    if (!entry) {
+      return 'bg-[#161b22]';
+    }
+
     if (typeof entry.value === 'boolean' && entry.value) {
       return 'bg-[#39d353]';
     }
+
     return 'bg-[#161b22]';
   };
 

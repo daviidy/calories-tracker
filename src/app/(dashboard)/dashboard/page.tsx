@@ -6,10 +6,12 @@ import { useActiveChallenges } from '@/lib/hooks/useActiveChallenges';
 import DailyProgress from '@/components/challenges/DailyProgress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { useState } from 'react';
 
 const DashboardPage = () => {
   const { summary, isLoading: isLoadingCalories, error: caloriesError } = useCalorieData();
   const { challenges, isLoading: isLoadingChallenges, error: challengesError } = useActiveChallenges();
+  const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
 
   // Helper function to calculate safe percentage
   const calculateSafePercentage = (value: number, max: number) => {
@@ -28,6 +30,10 @@ const DashboardPage = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleAddEntry = () => {
+    setIsQuickEntryOpen(true);
   };
 
   return (
@@ -155,7 +161,7 @@ const DashboardPage = () => {
             <div className="text-center py-8">
               <p className="text-gray-500">No active challenges</p>
               <button 
-                onClick={() => document.querySelector<HTMLButtonElement>('[aria-label="Add new entry"]')?.click()}
+                onClick={handleAddEntry}
                 className="mt-4 text-[#4d90cc] hover:text-[#4d90cc]/90"
               >
                 Create a challenge
@@ -247,7 +253,7 @@ const DashboardPage = () => {
                         </span>
                       </div>
                       <button 
-                        onClick={() => document.querySelector<HTMLButtonElement>('[aria-label="Add new entry"]')?.click()}
+                        onClick={handleAddEntry}
                         className="text-[#4d90cc] hover:text-[#4d90cc]/90 text-sm"
                       >
                         Add Entry
@@ -413,7 +419,10 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <QuickEntryForm />
+      <QuickEntryForm 
+        isOpen={isQuickEntryOpen}
+        onClose={() => setIsQuickEntryOpen(false)}
+      />
     </div>
   );
 };

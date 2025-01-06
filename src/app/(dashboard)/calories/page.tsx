@@ -17,6 +17,7 @@ const CalorieLogPage = () => {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedEntry, setSelectedEntry] = useState<CalorieLogEntry | null>(null);
+  const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
   const { entries, isLoading, error, hasMore, loadMore, refresh } = useCalorieLog();
   const { chartData, isLoading: isLoadingChart, error: chartError } = useCalorieChartData(timeRange);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -75,6 +76,10 @@ const CalorieLogPage = () => {
     }
   };
 
+  const handleAddEntry = () => {
+    setIsQuickEntryOpen(true);
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -86,7 +91,7 @@ const CalorieLogPage = () => {
             onDateSelect={handleDateSelect}
           />
           <button
-            onClick={() => document.querySelector<HTMLButtonElement>('[aria-label="Add new entry"]')?.click()}
+            onClick={handleAddEntry}
             className="px-4 py-2 bg-[#4d90cc] text-white rounded-lg hover:bg-[#4d90cc]/90 transition-colors"
           >
             Add Entry
@@ -256,7 +261,10 @@ const CalorieLogPage = () => {
         )}
       </div>
 
-      <QuickEntryForm />
+      <QuickEntryForm 
+        isOpen={isQuickEntryOpen}
+        onClose={() => setIsQuickEntryOpen(false)}
+      />
       
       {selectedEntry && (
         <EditEntryDialog

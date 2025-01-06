@@ -12,11 +12,6 @@ type ChallengeType = 'Fitness' | 'Intellectual' | 'Spiritual' | 'Custom';
 type ChallengeFrequency = 'Daily' | 'Weekly' | 'Monthly';
 type TrackingType = 'Checkbox' | 'Numeric';
 
-interface CalorieGoal {
-  target: number;
-  timestamp: Date;
-}
-
 interface ChallengeFormData {
   name: string;
   type: ChallengeType;
@@ -34,23 +29,66 @@ interface QuickEntryFormProps {
     timestamp: Date;
   };
   onClose?: () => void;
+  isOpen?: boolean;
 }
 
-const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
+const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen }: QuickEntryFormProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState<'calories' | 'goals' | 'challenges'>('calories');
+  const [type, setType] = useState<EntryType | null>(null);
   const [consumed, setConsumed] = useState(editEntry?.consumed.toString() || '');
   const [expended, setExpended] = useState(editEntry?.expended.toString() || '');
+  const [target, setTarget] = useState('');
+  const [challengeData, setChallengeData] = useState<ChallengeFormData>({
+    name: '',
+    type: 'Fitness',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    frequency: 'Daily',
+    trackingType: 'Checkbox'
+  });
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (propIsOpen !== undefined) {
+      setIsOpen(propIsOpen);
+    }
+  }, [propIsOpen]);
+
+  useEffect(() => {
     if (editEntry) {
       setIsOpen(true);
+      setType('calories');
       setConsumed(editEntry.consumed.toString());
       setExpended(editEntry.expended.toString());
     }
   }, [editEntry]);
+
+  const handleOpenForm = (initialType?: EntryType) => {
+    setIsOpen(true);
+    setType(initialType || null);
+  };
+
+  const handleCloseForm = () => {
+    setIsOpen(false);
+    setType(null);
+    setConsumed('');
+    setExpended('');
+    setTarget('');
+    setChallengeData({
+      name: '',
+      type: 'Fitness',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      frequency: 'Daily',
+      trackingType: 'Checkbox'
+    });
+    if (onClose) onClose();
+  };
+
+  const handleBackToMenu = () => {
+    setType(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +144,7 @@ const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
         toast.success('Goal updated successfully!');
         // Reset form
         setIsOpen(false);
-        setEntryType(null);
+        setType('calories');
         setTarget('');
       }
     } catch (error) {
@@ -143,7 +181,7 @@ const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
         toast.success('Challenge created successfully!');
         // Reset form
         setIsOpen(false);
-        setEntryType(null);
+        setType('calories');
         setChallengeData({
           name: '',
           type: 'Fitness',
@@ -400,7 +438,7 @@ const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => handleOpenForm()}
         className="fixed bottom-6 right-6 text-white rounded-full p-4 shadow-lg transition-colors hover:opacity-90"
         style={{ backgroundColor: '#4d90cc' }}
         aria-label="Add new entry"
@@ -412,14 +450,24 @@ const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">
-                {type ? `Add ${type.charAt(0).toUpperCase() + type.slice(1)}` : 'Quick Entry'}
-              </h2>
+              <div className="flex items-center gap-3">
+                {type && (
+                  <button
+                    onClick={handleBackToMenu}
+                    className="text-gray-500 hover:text-gray-700"
+                    aria-label="Back"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+                <h2 className="text-xl font-bold text-gray-900">
+                  {type ? `Add ${type.charAt(0).toUpperCase() + type.slice(1)}` : 'Quick Entry'}
+                </h2>
+              </div>
               <button 
-                onClick={() => {
-                  setIsOpen(false);
-                  setType(null);
-                }}
+                onClick={handleCloseForm}
                 className="text-gray-500 hover:text-gray-700"
                 aria-label="Close"
               >
@@ -427,7 +475,33 @@ const QuickEntryForm = ({ editEntry, onClose }: QuickEntryFormProps) => {
               </button>
             </div>
 
-            {renderForm()}
+            {type === null ? (
+              <div className="grid grid-cols-1 gap-4">
+                <button
+                  onClick={() => setType('calories')}
+                  className="p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                >
+                  <h3 className="font-medium text-gray-900">Calories Entry</h3>
+                  <p className="text-sm text-gray-500">Log your daily calorie intake and expenditure</p>
+                </button>
+                <button
+                  onClick={() => setType('goals')}
+                  className="p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                >
+                  <h3 className="font-medium text-gray-900">Calorie Goals</h3>
+                  <p className="text-sm text-gray-500">Set or update your calorie goals</p>
+                </button>
+                <button
+                  onClick={() => setType('challenges')}
+                  className="p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                >
+                  <h3 className="font-medium text-gray-900">New Challenge</h3>
+                  <p className="text-sm text-gray-500">Create a new personal challenge</p>
+                </button>
+              </div>
+            ) : (
+              renderForm()
+            )}
           </div>
         </div>
       )}

@@ -46,8 +46,7 @@ users/
   │           └── entries/
   │               └── {entryId}
   │                   ├── date
-  │                   ├── type
-  │                   ├── value
+  │                   ├── value (yes or no, or a number -- depending on the challenge type)
   │                   └── notes
 ```
 

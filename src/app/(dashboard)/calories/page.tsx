@@ -84,7 +84,7 @@ const CalorieLogPage = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Calorie Log</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Calorie Log</h1>
         <div className="flex items-center gap-4">
           <DateSearch
             selectedDate={selectedDate}

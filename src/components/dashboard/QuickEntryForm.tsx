@@ -30,9 +30,10 @@ interface QuickEntryFormProps {
   };
   onClose?: () => void;
   isOpen?: boolean;
+  refresh?: () => void;
 }
 
-const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen }: QuickEntryFormProps) => {
+const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: QuickEntryFormProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<EntryType | null>(null);
   const [consumed, setConsumed] = useState(editEntry?.consumed.toString() || '');
@@ -190,6 +191,10 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen }: QuickEntryFo
           frequency: 'Daily',
           trackingType: 'Checkbox'
         });
+        // Refresh challenges list
+        if (refresh) {
+          refresh();
+        }
       }
     } catch (error) {
       console.error('Error creating challenge:', error);

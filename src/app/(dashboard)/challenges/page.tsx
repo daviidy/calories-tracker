@@ -40,7 +40,7 @@ const ChallengesPage = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Challenges</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Challenges</h1>
         <button
           onClick={() => setIsQuickEntryOpen(true)}
           className="px-4 py-2 bg-[#4d90cc] text-white rounded-lg hover:bg-[#4d90cc]/90 transition-colors"
@@ -145,6 +145,7 @@ const ChallengesPage = () => {
       <QuickEntryForm 
         isOpen={isQuickEntryOpen}
         onClose={() => setIsQuickEntryOpen(false)}
+        refresh={refresh}
       />
 
       {selectedChallenge && (

@@ -6,10 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import md5 from 'md5';
+import { useProfilePicture } from '@/lib/hooks/useProfilePicture';
 
 const Sidebar = () => {
   const { user } = useAuth();
+  const { gravatarUrl } = useProfilePicture();
   const pathname = usePathname();
   const router = useRouter();
   
@@ -21,11 +22,6 @@ const Sidebar = () => {
       console.error('Logout failed:', error);
     }
   };
-
-  // Generate Gravatar URL
-  const gravatarUrl = user?.email ? 
-    `https://www.gravatar.com/avatar/${md5(user.email.toLowerCase().trim())}?d=mp` : 
-    '/default-avatar.png';
 
   const menuItems = [
     {
@@ -52,24 +48,6 @@ const Sidebar = () => {
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 15L8.5359 17.2236L9.5 13.2361L6.5 10.6056L10.5673 10.1382L12 6.5L13.4327 10.1382L17.5 10.6056L14.5 13.2361L15.4641 17.2236L12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-    },
-    {
-      href: '/calendar',
-      label: 'Calendar',
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-    },
-    {
-      href: '/reports',
-      label: 'Reports',
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 17V7M13 17V11M17 17V14M5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
     },

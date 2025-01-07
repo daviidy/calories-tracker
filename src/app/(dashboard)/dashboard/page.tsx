@@ -7,10 +7,13 @@ import DailyProgress from '@/components/challenges/DailyProgress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
 import { useState } from 'react';
+import { useTodaysChallenges } from '@/lib/hooks/useTodaysChallenges';
+import Link from 'next/link';
 
 const DashboardPage = () => {
   const { summary, isLoading: isLoadingCalories, error: caloriesError } = useCalorieData();
-  const { challenges, isLoading: isLoadingChallenges, error: challengesError } = useActiveChallenges();
+  const { challenges: activeChallenges, isLoading: isLoadingActiveChallenges, error: activeChallengesError } = useActiveChallenges();
+  const { challenges: todaysChallenges, isLoading: isLoadingTodaysChallenges, error: todaysChallengesError } = useTodaysChallenges();
   const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
 
   // Helper function to calculate safe percentage
@@ -38,11 +41,11 @@ const DashboardPage = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Today&apos;s Summary Card */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Today's Summary Card */}
+        <div className="md:col-span-1 bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Today&apos;s Summary</h2>
           {isLoadingCalories ? (
             <div className="space-y-6">
@@ -130,34 +133,34 @@ const DashboardPage = () => {
         </div>
 
         {/* Active Challenges Summary */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="md:col-span-2 bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Active Challenges</h2>
-            {challenges.length > 0 && (
+            {activeChallenges.length > 0 && (
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500">{challenges.length} active</span>
-                {challenges.length > 2 && (
-                  <a 
+                <span className="text-sm text-gray-500">{activeChallenges.length} active</span>
+                {activeChallenges.length > 2 && (
+                  <Link 
                     href="/challenges" 
-                    className="text-sm text-[#4d90cc] hover:text-[#4d90cc]/90"
+                    className="text-[#4d90cc] hover:text-[#4d90cc]/90 text-sm"
                   >
-                    View All
-                  </a>
+                    View all
+                  </Link>
                 )}
               </div>
             )}
           </div>
 
-          {isLoadingChallenges ? (
+          {isLoadingActiveChallenges ? (
             <div className="space-y-4">
               <div className="animate-pulse">
                 <div className="h-20 bg-gray-200 rounded-lg mb-4"></div>
                 <div className="h-20 bg-gray-200 rounded-lg"></div>
               </div>
             </div>
-          ) : challengesError ? (
-            <div className="text-red-500 text-center py-4">{challengesError}</div>
-          ) : challenges.length === 0 ? (
+          ) : activeChallengesError ? (
+            <div className="text-red-500 text-center py-4">{activeChallengesError}</div>
+          ) : activeChallenges.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">No active challenges</p>
               <button 
@@ -169,7 +172,7 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {challenges.slice(0, 2).map((challenge) => (
+              {activeChallenges.slice(0, 2).map((challenge) => (
                 <div key={challenge.id} className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -207,89 +210,69 @@ const DashboardPage = () => {
                   )}
                 </div>
               ))}
-              {challenges.length > 2 && (
-                <a 
+              {activeChallenges.length > 2 && (
+                <Link 
                   href="/challenges"
                   className="block text-center py-3 border border-gray-200 rounded-lg text-[#4d90cc] hover:text-[#4d90cc]/90 hover:border-gray-300 transition-colors"
                 >
-                  View {challenges.length - 2} more challenge{challenges.length - 2 !== 1 ? 's' : ''}
-                </a>
+                  View {activeChallenges.length - 2} more challenge{activeChallenges.length - 2 !== 1 ? 's' : ''}
+                </Link>
               )}
             </div>
           )}
         </div>
 
         {/* Today's Challenge */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="md:col-span-1 bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Today&apos;s Challenge</h2>
-          {isLoadingChallenges ? (
+          {isLoadingTodaysChallenges ? (
             <div className="animate-pulse">
               <div className="h-20 bg-gray-200 rounded-lg"></div>
             </div>
-          ) : challengesError ? (
-            <div className="text-red-500 text-center py-4">{challengesError}</div>
+          ) : todaysChallengesError ? (
+            <div className="text-red-500 text-center py-4">{todaysChallengesError}</div>
+          ) : todaysChallenges.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No challenges for today</p>
+              <button 
+                onClick={handleAddEntry}
+                className="mt-4 text-[#4d90cc] hover:text-[#4d90cc]/90"
+              >
+                Create a challenge
+              </button>
+            </div>
           ) : (
             <div className="space-y-4">
-              {challenges
-                .filter(challenge => {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  return !challenge.entries.some(entry => {
-                    const entryDate = new Date(entry.date);
-                    entryDate.setHours(0, 0, 0, 0);
-                    return entryDate.getTime() === today.getTime();
-                  });
-                })
-                .map(challenge => (
-                  <div 
-                    key={challenge.id} 
-                    className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-medium text-gray-900">{challenge.name}</h3>
-                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mt-1 ${getChallengeTypeColor(challenge.type)}`}>
-                          {challenge.type}
-                        </span>
-                      </div>
-                      <button 
-                        onClick={handleAddEntry}
-                        className="text-[#4d90cc] hover:text-[#4d90cc]/90 text-sm"
-                      >
-                        Add Entry
-                      </button>
+              {todaysChallenges.map(challenge => (
+                <div 
+                  key={challenge.id} 
+                  className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{challenge.name}</h3>
+                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mt-1 ${getChallengeTypeColor(challenge.type)}`}>
+                        {challenge.type}
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-500">
-                      {challenge.frequency} • {challenge.trackingType}
-                    </p>
+                    <Link 
+                      href={`/challenges/${challenge.id}`}
+                      className="text-[#4d90cc] hover:text-[#4d90cc]/90 text-sm"
+                    >
+                      Add Entry
+                    </Link>
                   </div>
-                ))
-              }
-              {challenges.filter(challenge => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                return !challenge.entries.some(entry => {
-                  const entryDate = new Date(entry.date);
-                  entryDate.setHours(0, 0, 0, 0);
-                  return entryDate.getTime() === today.getTime();
-                });
-              }).length === 0 && (
-                <div className="text-center py-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-green-600" viewBox="0 0 24 24" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 0 0-.584.859 6.753 6.753 0 0 0 6.138 5.6 6.73 6.73 0 0 0 2.743 1.346A6.707 6.707 0 0 1 9.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 0 0-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-2.25-2.25h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 0 1-1.112-3.173 6.73 6.73 0 0 0 2.743-1.347 6.753 6.753 0 0 0 6.139-5.6.75.75 0 0 0-.585-.858 47.077 47.077 0 0 0-3.07-.543V2.62a.75.75 0 0 0-.658-.744 49.22 49.22 0 0 0-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 0 0-.657.744Zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 0 1 3.16 5.337a45.6 45.6 0 0 1 2.006-.343v.256Zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 0 1-2.863 3.207 6.72 6.72 0 0 0 .857-3.294Z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">All Challenges Completed!</h3>
-                  <p className="text-gray-500">You&apos;ve completed all your challenges for today. Great job! 🎉</p>
+                  <p className="text-sm text-gray-500">
+                    {challenge.frequency} • {challenge.trackingType}
+                  </p>
                 </div>
-              )}
+              ))}
             </div>
           )}
         </div>
 
         {/* Weekly Progress */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="md:col-span-2 bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Weekly Progress</h2>
           {isLoadingCalories ? (
             <div className="animate-pulse">
@@ -366,9 +349,9 @@ const DashboardPage = () => {
         </div>
 
         {/* Streak Information */}
-        <div className="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6">
+        <div className="col-span-1 md:col-span-3 bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Streak Information</h2>
-          {isLoadingCalories || isLoadingChallenges ? (
+          {isLoadingCalories || isLoadingActiveChallenges ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="animate-pulse">
                 <div className="h-24 bg-gray-200 rounded-lg"></div>
@@ -377,9 +360,9 @@ const DashboardPage = () => {
                 <div className="h-24 bg-gray-200 rounded-lg"></div>
               </div>
             </div>
-          ) : caloriesError || challengesError ? (
+          ) : caloriesError || activeChallengesError ? (
             <div className="text-red-500 text-center py-4">
-              {caloriesError || challengesError}
+              {caloriesError || activeChallengesError}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

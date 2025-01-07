@@ -5,6 +5,7 @@ import { useChallenge } from '@/lib/hooks/useChallenge';
 import { format, isToday } from 'date-fns';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import DailyProgress from '@/components/challenges/DailyProgress';
+import ChallengeProgressChart from '@/components/challenges/ChallengeProgressChart';
 import { use } from 'react';
 import { Challenge } from '@/lib/hooks/useChallenges';
 import { toast } from 'react-hot-toast';
@@ -28,8 +29,11 @@ const AddEntryDialog = ({ isOpen, onClose, onSubmit, trackingType, frequency }: 
     setIsSubmitting(true);
 
     try {
+      const [year, month, day] = date.split('-').map(Number);
+      const entryDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+
       const entryData = {
-        date: new Date(date),
+        date: entryDate,
         value: trackingType === 'Checkbox' ? value === 'true' : Number(value),
         notes: notes.trim() || undefined
       };
@@ -350,7 +354,7 @@ const ChallengePage = ({ params }: { params: Promise<{ id: string }> }) => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{challenge.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{challenge.name}</h1>
           <div className="flex items-center gap-2 mt-2">
             <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getChallengeTypeColor(challenge.type)}`}>
               {challenge.type}
@@ -387,6 +391,12 @@ const ChallengePage = ({ params }: { params: Promise<{ id: string }> }) => {
           />
         </div>
       )}
+
+      {/* Progress Chart */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Progress Chart</h2>
+        <ChallengeProgressChart challenge={challenge} />
+      </div>
 
       {/* Entries List */}
       <div className="bg-white rounded-xl shadow-sm p-6">

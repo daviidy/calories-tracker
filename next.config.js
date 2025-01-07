@@ -2,11 +2,12 @@
 const nextConfig = {
   images: {
     domains: [
+      'lh3.googleusercontent.com',
+      's3-us-west-2.amazonaws.com',
       'www.gravatar.com',
-      'cdn.midjourney.com',
-      's3-us-west-2.amazonaws.com'
+      'firebasestorage.googleapis.com'
     ],
   },
-}
+};
 
-module.exports = nextConfig 
+module.exports = nextConfig; 

@@ -42,11 +42,14 @@ const DailyProgress = ({ startDate, endDate, entries }: DailyProgressProps) => {
   }, []);
 
   const getEntryForDay = (day: Date) => {
-    // Normalize both dates to start of day for comparison
     const normalizedDay = startOfDay(day);
     return entries.find(entry => {
-      const entryDate = startOfDay(entry.date);
-      return entryDate.getTime() === normalizedDay.getTime();
+      // Convert entry date to UTC to avoid timezone issues
+      const entryDate = new Date(entry.date);
+      entryDate.setUTCHours(0, 0, 0, 0);
+      const compareDay = new Date(normalizedDay);
+      compareDay.setUTCHours(0, 0, 0, 0);
+      return entryDate.getTime() === compareDay.getTime();
     });
   };
 
@@ -55,6 +58,7 @@ const DailyProgress = ({ startDate, endDate, entries }: DailyProgressProps) => {
     const normalizedStartDate = startOfDay(startDate);
     const normalizedEndDate = startOfDay(endDate);
 
+    // Check if the day is within the challenge's date range
     if (normalizedDay < normalizedStartDate || normalizedDay > normalizedEndDate) {
       return 'bg-[#161b22]';
     }
@@ -64,7 +68,8 @@ const DailyProgress = ({ startDate, endDate, entries }: DailyProgressProps) => {
       return 'bg-[#161b22]';
     }
 
-    if (typeof entry.value === 'boolean' && entry.value) {
+    // For checkbox-type challenges, highlight in green if value is true
+    if (typeof entry.value === 'boolean' && entry.value === true) {
       return 'bg-[#39d353]';
     }
 
@@ -96,20 +101,20 @@ const DailyProgress = ({ startDate, endDate, entries }: DailyProgressProps) => {
           {/* Days column */}
           <div className="flex flex-col justify-between text-[#7d8590] text-sm">
             {DAYS.map((day) => (
-              <div key={day} style={{ height: '12px' }}>{day}</div>
+              <div key={day} style={{ height: '10px' }}>{day}</div>
             ))}
           </div>
 
           {/* Calendar grid */}
           <div className="flex-1 overflow-hidden">
-            <div className="grid grid-flow-col auto-cols-fr gap-[12px]">
+            <div className="grid grid-flow-col gap-[3px] min-w-[750px]">
               {weeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid grid-rows-7 gap-[1px]">
+                <div key={weekIndex} className="grid grid-rows-7 gap-[3px]">
                   {week.map((day) => (
                     <Tooltip.Root key={day.toISOString()}>
                       <Tooltip.Trigger asChild>
                         <div
-                          className={`w-[11px] h-[11px] rounded-sm ${getColorClass(day)}`}
+                          className={`w-[10px] h-[10px] rounded-sm ${getColorClass(day)}`}
                         />
                       </Tooltip.Trigger>
                       <Tooltip.Portal>

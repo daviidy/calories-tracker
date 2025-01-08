@@ -20,6 +20,18 @@ const nextConfig = {
   },
   experimental: {
     appDir: true
+  },
+  trailingSlash: true,
+  // Handle dynamic routes
+  exportPathMap: async function () {
+    return {
+      '/': { page: '/' },
+      '/login': { page: '/login' },
+      '/dashboard': { page: '/dashboard' },
+      '/calories': { page: '/calories' },
+      '/challenges': { page: '/challenges' },
+      '/settings': { page: '/settings' },
+    }
   }
 };
 

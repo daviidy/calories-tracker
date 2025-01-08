@@ -10,6 +10,10 @@ import { use } from 'react';
 import { Challenge } from '@/lib/hooks/useChallenges';
 import { toast } from 'react-hot-toast';
 
+export async function generateStaticParams() {
+  return [];
+}
+
 interface AddEntryDialogProps {
   isOpen: boolean;
   onClose: () => void;

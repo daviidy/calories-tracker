@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   images: {
+    unoptimized: true,
     domains: [
       'lh3.googleusercontent.com',
       's3-us-west-2.amazonaws.com',
@@ -8,6 +10,8 @@ const nextConfig = {
       'firebasestorage.googleapis.com'
     ],
   },
+  basePath: '/calories-tracker',
+  assetPrefix: '/calories-tracker',
 };
 
 module.exports = nextConfig; 

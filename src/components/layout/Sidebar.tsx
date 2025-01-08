@@ -67,11 +67,19 @@ const Sidebar = () => {
     <aside className="flex flex-col w-64 h-screen px-4 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
       <Link href="/dashboard" className="flex items-center">
         <Image
-          src="https://s3-us-west-2.amazonaws.com/anchor-generated-image-bank/staging/podcast_uploaded_nologo/40624037/40624037-1708898066368-b21c6c2b0b24f.jpg"
-          alt="Calories Tracker"
+          src="/checkit.png"
+          alt="Checkit"
           width={120}
           height={40}
-          className="w-auto h-10 object-contain"
+          className="hidden w-auto h-10 object-contain dark:hidden"
+          priority
+        />
+        <Image
+          src="/checkitdark.png"
+          alt="Checkit"
+          width={120}
+          height={40}
+          className="hidden w-auto h-10 object-contain dark:block"
           priority
         />
       </Link>

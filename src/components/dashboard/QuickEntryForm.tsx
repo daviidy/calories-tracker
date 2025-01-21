@@ -39,6 +39,7 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: Qui
   const [consumed, setConsumed] = useState(editEntry?.consumed.toString() || '');
   const [expended, setExpended] = useState(editEntry?.expended.toString() || '');
   const [target, setTarget] = useState('');
+  const [entryDate, setEntryDate] = useState(editEntry?.timestamp.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]);
   const [challengeData, setChallengeData] = useState<ChallengeFormData>({
     name: '',
     type: 'Fitness',
@@ -76,6 +77,7 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: Qui
     setConsumed('');
     setExpended('');
     setTarget('');
+    setEntryDate(new Date().toISOString().split('T')[0]);
     setChallengeData({
       name: '',
       type: 'Fitness',
@@ -101,7 +103,7 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: Qui
         userId: user.uid,
         consumed: parseInt(consumed) || 0,
         expended: parseInt(expended) || 0,
-        timestamp: editEntry?.timestamp || new Date(),
+        timestamp: editEntry?.timestamp || new Date(entryDate),
       };
 
       if (editEntry) {
@@ -117,6 +119,7 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: Qui
       setIsOpen(false);
       setConsumed('');
       setExpended('');
+      if (refresh) refresh();
       if (onClose) onClose();
     } catch (error) {
       console.error('Error saving entry:', error);
@@ -209,6 +212,20 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: Qui
       case 'calories':
         return (
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="entryDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Date
+              </label>
+              <input
+                id="entryDate"
+                type="date"
+                value={entryDate}
+                onChange={(e) => setEntryDate(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-[#4d90cc] text-gray-900"
+                style={{ '--tw-ring-color': '#4d90cc' } as React.CSSProperties}
+              />
+            </div>
+
             <div>
               <label htmlFor="consumed" className="block text-sm font-medium text-gray-700 mb-1">
                 Calories Consumed

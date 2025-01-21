@@ -12,6 +12,7 @@ import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from 'react-hot-toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 const CalorieLogPage = () => {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
@@ -22,6 +23,7 @@ const CalorieLogPage = () => {
   const { chartData, isLoading: isLoadingChart, error: chartError } = useCalorieChartData(timeRange);
   const observer = useRef<IntersectionObserver | null>(null);
   const entriesRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [deleteEntryId, setDeleteEntryId] = useState<string | null>(null);
 
   // Last element ref callback for infinite scrolling
   const lastEntryRef = useCallback((node: HTMLDivElement | null) => {
@@ -64,10 +66,14 @@ const CalorieLogPage = () => {
   };
 
   const handleDelete = async (entryId: string) => {
-    if (!confirm('Are you sure you want to delete this entry?')) return;
+    setDeleteEntryId(entryId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteEntryId) return;
 
     try {
-      await deleteDoc(doc(db, 'calorieEntries', entryId));
+      await deleteDoc(doc(db, 'calorieEntries', deleteEntryId));
       toast.success('Entry deleted successfully');
       refresh();
     } catch (error) {
@@ -279,6 +285,14 @@ const CalorieLogPage = () => {
           }}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteEntryId}
+        onClose={() => setDeleteEntryId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Entry"
+        message="Are you sure you want to delete this entry? This action cannot be undone."
+      />
     </div>
   );
 };

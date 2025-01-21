@@ -21,9 +21,23 @@ const ChallengeProgressChart = ({ challenge }: ChallengeProgressChartProps) => {
 
     return {
       date: format(date, 'MMM d'),
-      value: entry ? entry.value : null
+      value: entry?.value ?? null
     };
   });
+
+  const formatYAxisTick = (value: number) => {
+    if (challenge.trackingType === 'Checkbox') {
+      return value === 1 ? 'Yes' : '';
+    }
+    return value.toString();
+  };
+
+  const formatTooltipValue = (value: boolean | number | null) => {
+    if (challenge.trackingType === 'Checkbox') {
+      return value === true ? 'Completed' : 'Not Completed';
+    }
+    return value?.toString() ?? 'No Data';
+  };
 
   return (
     <div className="h-[300px]">
@@ -37,17 +51,14 @@ const ChallengeProgressChart = ({ challenge }: ChallengeProgressChartProps) => {
             dataKey="date" 
             stroke="#6b7280" 
             fontSize={12}
-            tickFormatter={(value) => value}
           />
           <YAxis 
             stroke="#6b7280" 
             fontSize={12}
-            domain={challenge.trackingType === 'Checkbox' ? [0, 1] : ['auto', 'auto']}
-            tickFormatter={value => 
-              challenge.trackingType === 'Checkbox' 
-                ? value === 1 ? 'Yes' : 'No'
-                : value.toString()
-            }
+            domain={[0, 1]}
+            tickFormatter={formatYAxisTick}
+            ticks={[0, 1]}
+            interval={0}
           />
           <Tooltip
             contentStyle={{
@@ -56,12 +67,7 @@ const ChallengeProgressChart = ({ challenge }: ChallengeProgressChartProps) => {
               borderRadius: '0.5rem',
               fontSize: '0.875rem',
             }}
-            formatter={(value) => [
-              challenge.trackingType === 'Checkbox'
-                ? (value === 1 ? 'Completed' : 'Not Completed')
-                : value?.toString() ?? 'No Data',
-              'Value'
-            ]}
+            formatter={(value: boolean | number | null) => [formatTooltipValue(value), 'Status']}
           />
           <Line
             type="monotone"

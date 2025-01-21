@@ -10,12 +10,14 @@ import { EditChallengeDialog } from '@/components/challenges/EditChallengeDialog
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from 'react-hot-toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 const ChallengesPage = () => {
   const { challenges, isLoading, error, deleteChallenge, refresh } = useChallenges();
   const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
   const [isEditChallengeOpen, setIsEditChallengeOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [deleteChallengeId, setDeleteChallengeId] = useState<string | null>(null);
 
   const getChallengeTypeColor = (type: string) => {
     switch (type) {
@@ -31,8 +33,18 @@ const ChallengesPage = () => {
   };
 
   const handleDelete = async (challengeId: string) => {
-    if (window.confirm('Are you sure you want to delete this challenge?')) {
-      await deleteChallenge(challengeId);
+    setDeleteChallengeId(challengeId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteChallengeId) return;
+
+    try {
+      await deleteChallenge(deleteChallengeId);
+      toast.success('Challenge deleted successfully');
+    } catch (error) {
+      console.error('Error deleting challenge:', error);
+      toast.error('Failed to delete challenge');
     }
   };
 
@@ -173,6 +185,14 @@ const ChallengesPage = () => {
           }}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteChallengeId}
+        onClose={() => setDeleteChallengeId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Challenge"
+        message="Are you sure you want to delete this challenge? This action cannot be undone."
+      />
     </div>
   );
 };

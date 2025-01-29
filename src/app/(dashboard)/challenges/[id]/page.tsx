@@ -9,6 +9,7 @@ import ChallengeProgressChart from '@/components/challenges/ChallengeProgressCha
 import { use } from 'react';
 import { Challenge } from '@/lib/hooks/useChallenges';
 import { toast } from 'react-hot-toast';
+import EditEntryDialog from '@/components/challenges/EditEntryDialog';
 
 interface AddEntryDialogProps {
   isOpen: boolean;
@@ -302,9 +303,10 @@ const EditChallengeDialog = ({ isOpen, onClose, challenge, onSubmit }: EditChall
 
 const ChallengePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const resolvedParams = use(params);
-  const { challenge, isLoading, error, addEntry, deleteEntry, updateChallenge } = useChallenge(resolvedParams.id);
+  const { challenge, isLoading, error, addEntry, deleteEntry, updateEntry, updateChallenge } = useChallenge(resolvedParams.id);
   const [isAddEntryOpen, setIsAddEntryOpen] = useState(false);
   const [isEditChallengeOpen, setIsEditChallengeOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<{ id: string; date: Date; value: boolean | number; notes?: string } | null>(null);
 
   const getChallengeTypeColor = (type: string) => {
     switch (type) {
@@ -445,12 +447,20 @@ const ChallengePage = ({ params }: { params: Promise<{ id: string }> }) => {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(entry.id)}
-                  className="p-2 text-gray-500 hover:text-red-600 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <TrashIcon className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedEntry(entry)}
+                    className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <PencilIcon className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(entry.id)}
+                    className="p-2 text-gray-500 hover:text-red-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -471,6 +481,20 @@ const ChallengePage = ({ params }: { params: Promise<{ id: string }> }) => {
         challenge={challenge}
         onSubmit={updateChallenge}
       />
+
+      {selectedEntry && (
+        <EditEntryDialog
+          isOpen={!!selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+          onSubmit={async (data) => {
+            await updateEntry(selectedEntry.id, data);
+            setSelectedEntry(null);
+          }}
+          entry={selectedEntry}
+          trackingType={challenge.trackingType}
+          frequency={challenge.frequency}
+        />
+      )}
     </div>
   );
 };

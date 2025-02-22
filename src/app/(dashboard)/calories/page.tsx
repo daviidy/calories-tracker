@@ -20,7 +20,13 @@ const CalorieLogPage = () => {
   const [selectedEntry, setSelectedEntry] = useState<CalorieLogEntry | null>(null);
   const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
   const { entries, isLoading, error, hasMore, loadMore, refresh } = useCalorieLog();
-  const { chartData, isLoading: isLoadingChart, error: chartError } = useCalorieChartData(timeRange);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { chartData, isLoading: isLoadingChart, error: chartError } = useCalorieChartData(timeRange, refreshTrigger);
+
+  const handleRefresh = () => {
+    refresh();
+    setRefreshTrigger(prev => prev + 1);
+  };
   const observer = useRef<IntersectionObserver | null>(null);
   const entriesRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const [deleteEntryId, setDeleteEntryId] = useState<string | null>(null);
@@ -62,7 +68,7 @@ const CalorieLogPage = () => {
   };
 
   const handleEditSuccess = () => {
-    refresh();
+    handleRefresh();
   };
 
   const handleDelete = async (entryId: string) => {
@@ -75,7 +81,7 @@ const CalorieLogPage = () => {
     try {
       await deleteDoc(doc(db, 'calorieEntries', deleteEntryId));
       toast.success('Entry deleted successfully');
-      refresh();
+      handleRefresh();
     } catch (error) {
       console.error('Error deleting entry:', error);
       toast.error('Failed to delete entry');
@@ -270,6 +276,7 @@ const CalorieLogPage = () => {
       <QuickEntryForm 
         isOpen={isQuickEntryOpen}
         onClose={() => setIsQuickEntryOpen(false)}
+        refresh={handleRefresh}
       />
       
       {selectedEntry && (
@@ -297,4 +304,4 @@ const CalorieLogPage = () => {
   );
 };
 
-export default CalorieLogPage; 
+export default CalorieLogPage;

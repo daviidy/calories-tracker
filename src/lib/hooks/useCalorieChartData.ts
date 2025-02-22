@@ -17,7 +17,10 @@ interface UseCalorieChartDataReturn {
   error: string | null;
 }
 
-export const useCalorieChartData = (timeRange: 'week' | 'month' | 'year'): UseCalorieChartDataReturn => {
+export const useCalorieChartData = (
+  timeRange: 'week' | 'month' | 'year',
+  refreshTrigger?: number
+): UseCalorieChartDataReturn => {
   const { user } = useAuth();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,7 +115,7 @@ export const useCalorieChartData = (timeRange: 'week' | 'month' | 'year'): UseCa
     };
 
     loadChartData();
-  }, [user, timeRange]);
+  }, [user, timeRange, refreshTrigger]);
 
   return { chartData, isLoading, error };
-}; 
+};

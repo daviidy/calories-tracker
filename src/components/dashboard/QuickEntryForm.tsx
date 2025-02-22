@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { db } from "@/lib/firebase/config";
-import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, Timestamp } from "firebase/firestore";
 import { useAuth } from "@/lib/context/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -103,7 +103,12 @@ const QuickEntryForm = ({ editEntry, onClose, isOpen: propIsOpen, refresh }: Qui
         userId: user.uid,
         consumed: parseInt(consumed) || 0,
         expended: parseInt(expended) || 0,
-        timestamp: editEntry?.timestamp || new Date(entryDate),
+        timestamp: editEntry?.timestamp || (() => {
+          // Create a Firestore timestamp for the selected date at 12:00 PM local time
+          const [year, month, day] = entryDate.split('-').map(Number);
+          const date = new Date(year, month - 1, day, 12, 0, 0);
+          return Timestamp.fromDate(date);
+        })(),
       };
 
       if (editEntry) {

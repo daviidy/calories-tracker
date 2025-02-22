@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase/config';
-import { collection, query, where, orderBy, limit, startAfter, getDocs, QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, startAfter, getDocs, QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/lib/context/AuthContext';
-import { startOfDay, endOfDay, subDays, subMonths, subYears } from 'date-fns';
 
 export interface CalorieLogEntry {
   id: string;
@@ -33,18 +32,20 @@ export const useCalorieLog = (timeRange: 'week' | 'month' | 'year' = 'week'): Us
 
   // Get date range based on selected time range
   const getDateRange = () => {
-    const end = endOfDay(new Date());
+    const now = new Date();
+    // Set end to current date at 23:59:59.999
+    const end = Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999));
     let start;
 
     switch (timeRange) {
       case 'month':
-        start = startOfDay(subMonths(end, 1));
+        start = Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth() - 1, now.getDate(), 0, 0, 0, 0));
         break;
       case 'year':
-        start = startOfDay(subYears(end, 1));
+        start = Timestamp.fromDate(new Date(now.getFullYear() - 1, now.getMonth(), now.getDate(), 0, 0, 0, 0));
         break;
       default: // week
-        start = startOfDay(subDays(end, 7));
+        start = Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 0, 0, 0, 0));
     }
 
     return { start, end };
@@ -162,4 +163,4 @@ export const useCalorieLog = (timeRange: 'week' | 'month' | 'year' = 'week'): Us
     loadMore,
     refresh: loadInitialEntries
   };
-}; 
+};
